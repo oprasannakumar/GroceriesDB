@@ -19,8 +19,6 @@ body{
   box-shadow:0 0 10px rgba(0,0,0,.1);
   padding:20px;
 }
-
-/* Inputs */
 label{font-weight:bold;display:block;margin-top:10px}
 input{
   width:100%;
@@ -31,28 +29,23 @@ input{
   border:1px solid #ccc;
   box-sizing:border-box;
 }
-
-/* Buttons */
 button{
   border:none;
   border-radius:4px;
   cursor:pointer;
 }
-
 .primary-btn{
   width:100%;
   height:36px;
   font-size:14px;
   margin-top:8px;
 }
-
 .add-item-btn{background:#6f42c1;color:#fff}
 .add-dealer-btn{background:#28a745;color:#fff}
 .cancel-btn{background:#6c757d;color:#fff}
 .edit-btn{background:#007bff;color:#fff;height:28px;font-size:12px}
 .delete-btn{background:#dc3545;color:#fff;height:28px;font-size:12px}
 
-/* Suggestions */
 .suggestions{
   border:1px solid #ccc;
   border-top:none;
@@ -68,15 +61,12 @@ button{
   background:#007bff;
   color:#fff;
 }
-
-/* Info */
 .info-box{
   margin-top:15px;
   padding:12px;
   background:#f8f9fa;
   border-radius:6px;
 }
-
 .dealer-row{
   display:flex;
   justify-content:space-between;
@@ -86,12 +76,10 @@ button{
   margin-top:6px;
   border-radius:4px;
 }
-
 .dealer-meta{
   font-size:12px;
   color:#666;
 }
-
 .hidden{display:none}
 </style>
 </head>
@@ -100,7 +88,7 @@ button{
 
 <div class="container">
 
-  <!-- SEARCH / ITEM INPUT -->
+  <!-- ITEM SEARCH -->
   <label>Item</label>
   <input
     id="itemInput"
@@ -110,14 +98,15 @@ button{
   >
   <div id="suggestions" class="suggestions"></div>
 
-  <!-- ACTION BUTTONS -->
+  <!-- ACTIONS -->
   <button class="primary-btn add-item-btn" onclick="addNewItem()">➕ Add Item</button>
   <button class="primary-btn add-dealer-btn" onclick="showAddDealer()">➕ Add Dealer</button>
 
-  <!-- ADD DEALER FORM (HIDDEN INITIALLY) -->
+  <!-- ADD DEALER -->
   <div id="addDealerBox" class="info-box hidden">
     <label>Dealer Name</label>
-    <input id="dealerName" placeholder="Dealer name">
+    <input id="dealerName" list="dealerListMaster" placeholder="Select or type dealer">
+    <datalist id="dealerListMaster"></datalist>
 
     <label>Price</label>
     <input id="dealerPrice" type="number" placeholder="Price">
@@ -135,8 +124,7 @@ button{
 
 <script>
 /* ================= CONFIG ================= */
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzRt_ad2rXgZNVO4_Nlumm8EAxN7jcG7gG1y0yKEec7WXnws68ygcAqrhCjRzcmdWzl/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzRt_ad2rXgZNVO4_Nlumm8EAxN7jcG7gG1y0yKEec7WXnws68ygcAqrhCjRzcmdWzl/exec";
 const API_KEY = "9848o22338B!";
 
 /* ================= STATE ================= */
@@ -145,21 +133,38 @@ let filteredItems = [];
 let activeIndex = -1;
 let selectedItem = "";
 
-/* ================= LOAD DATA ================= */
+/* ================= LOAD ================= */
 window.onload = () => {
   fetch(`${API_URL}?key=${API_KEY}`)
-    .then(r => r.text())
-    .then(t => groceries = JSON.parse(t || "{}"))
+    .then(r => r.json())
+    .then(data => {
+      groceries = data || {};
+      populateDealerMaster();
+    })
     .catch(() => alert("Failed to load data"));
 };
 
-/* ================= AUTOCOMPLETE ================= */
+/* ================= DEALER MASTER ================= */
+function populateDealerMaster(){
+  const dealerSet = new Set();
+  Object.values(groceries).forEach(arr=>{
+    arr.forEach(d=>dealerSet.add(d.dealer));
+  });
+
+  dealerListMaster.innerHTML="";
+  [...dealerSet].sort().forEach(name=>{
+    const opt=document.createElement("option");
+    opt.value=name;
+    dealerListMaster.appendChild(opt);
+  });
+}
+
+/* ================= AUTOCOMPLETE ITEMS ================= */
 function filterItems(){
   const val = itemInput.value.toLowerCase();
   suggestions.innerHTML="";
   filteredItems=[];
   activeIndex=-1;
-
   if(!val) return;
 
   filteredItems = Object.keys(groceries)
@@ -173,36 +178,20 @@ function filterItems(){
   });
 }
 
-/* ================= KEYBOARD ================= */
 function handleKeys(e){
   if(!filteredItems.length) return;
-
-  if(e.key==="ArrowDown"){
-    e.preventDefault();
-    activeIndex=(activeIndex+1)%filteredItems.length;
-    highlight();
-  }else if(e.key==="ArrowUp"){
-    e.preventDefault();
-    activeIndex=(activeIndex-1+filteredItems.length)%filteredItems.length;
-    highlight();
-  }else if(e.key==="Enter"||e.key==="Tab"){
-    e.preventDefault();
-    if(activeIndex===-1) activeIndex=0;
-    selectItem(filteredItems[activeIndex]);
-  }
+  if(e.key==="ArrowDown"){e.preventDefault();activeIndex=(activeIndex+1)%filteredItems.length;highlight();}
+  else if(e.key==="ArrowUp"){e.preventDefault();activeIndex=(activeIndex-1+filteredItems.length)%filteredItems.length;highlight();}
+  else if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();selectItem(filteredItems[activeIndex===-1?0:activeIndex]);}
 }
-
 function highlight(){
-  [...suggestions.children].forEach((el,i)=>{
-    el.classList.toggle("active",i===activeIndex);
-  });
+  [...suggestions.children].forEach((el,i)=>el.classList.toggle("active",i===activeIndex));
 }
 
 /* ================= SELECT ITEM ================= */
 function selectItem(item){
   selectedItem=item;
   itemInput.value=item;
-
   suggestions.innerHTML="";
   details.classList.remove("hidden");
 
@@ -213,9 +202,7 @@ function selectItem(item){
     row.innerHTML=`
       <div>
         <b>${d.dealer}</b> – ₹${d.price}<br>
-        <span class="dealer-meta">
-          Last updated: ${d.updated || "N/A"}
-        </span>
+        <span class="dealer-meta">${formatDate(d.updated)}</span>
       </div>
       <div>
         <button class="edit-btn" onclick="editDealer('${d.dealer}',${d.price})">✏️</button>
@@ -228,104 +215,71 @@ function selectItem(item){
 
 /* ================= ADD ITEM ================= */
 function addNewItem(){
-  const item = prompt("Enter new item name:");
-  if(!item || groceries[item]) return;
+  const item=prompt("Item name:");
+  if(!item||groceries[item])return;
 
-  const dealer = prompt("Enter dealer name:");
-  const price = Number(prompt("Enter price:"));
-  if(!dealer || isNaN(price)) return;
-
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      key:API_KEY,
-      action:"add",
-      item,
-      dealer,
-      price
-    })
-  }).then(()=>{
-    groceries[item]=[{dealer,price,updated:new Date().toLocaleString()}];
-    selectItem(item);
-  });
+  showAddDealer();
+  selectedItem=item;
+  groceries[item]=[];
 }
 
 /* ================= ADD DEALER ================= */
 function showAddDealer(){
-  if(!selectedItem) return alert("Select an item first");
+  if(!selectedItem) return alert("Select or create item first");
+  populateDealerMaster();
   addDealerBox.classList.remove("hidden");
 }
-
 function hideAddDealer(){
   addDealerBox.classList.add("hidden");
-  dealerName.value="";
-  dealerPrice.value="";
+  dealerName.value="";dealerPrice.value="";
 }
-
 function addDealer(){
   const dealer=dealerName.value.trim();
   const price=Number(dealerPrice.value);
-  if(!dealer||isNaN(price)) return;
+  if(!dealer||isNaN(price))return;
 
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      key:API_KEY,
-      action:"add",
-      item:selectedItem,
-      dealer,
-      price
-    })
-  }).then(()=>{
-    groceries[selectedItem].push({
-      dealer,price,updated:new Date().toLocaleString()
-    });
+  save({action:"add",item:selectedItem,dealer,price},()=>{
+    groceries[selectedItem].push({dealer,price,updated:Date.now()});
+    populateDealerMaster();
     hideAddDealer();
     selectItem(selectedItem);
   });
 }
 
-/* ================= EDIT DEALER ================= */
+/* ================= EDIT / DELETE ================= */
 function editDealer(dealer,oldPrice){
-  const price=prompt("Update price:",oldPrice);
-  if(!price||isNaN(price)) return;
-
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      key:API_KEY,
-      action:"update",
-      item:selectedItem,
-      dealer,
-      price:Number(price)
-    })
-  }).then(()=>{
+  const price=Number(prompt("New price:",oldPrice));
+  if(isNaN(price))return;
+  save({action:"update",item:selectedItem,dealer,price},()=>{
     groceries[selectedItem].forEach(d=>{
-      if(d.dealer===dealer){
-        d.price=Number(price);
-        d.updated=new Date().toLocaleString();
-      }
+      if(d.dealer===dealer){d.price=price;d.updated=Date.now();}
     });
     selectItem(selectedItem);
   });
 }
-
-/* ================= DELETE DEALER ================= */
 function deleteDealer(dealer){
-  if(!confirm(`Delete dealer ${dealer}?`)) return;
-
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      key:API_KEY,
-      action:"delete",
-      item:selectedItem,
-      dealer
-    })
-  }).then(()=>{
+  if(!confirm("Delete dealer?"))return;
+  save({action:"delete",item:selectedItem,dealer},()=>{
     groceries[selectedItem]=groceries[selectedItem].filter(d=>d.dealer!==dealer);
+    populateDealerMaster();
     selectItem(selectedItem);
   });
+}
+
+/* ================= SAVE ================= */
+function save(payload,cb){
+  fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({...payload,key:API_KEY})
+  }).then(cb);
+}
+
+/* ================= DATE ================= */
+function formatDate(value){
+  const d=new Date(value);
+  if(isNaN(d)) return "Date: N/A<br>Time: N/A";
+  return `Date: ${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getFullYear()).slice(-2)}
+          <br>Time: ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 </script>
 
