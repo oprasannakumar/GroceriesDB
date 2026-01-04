@@ -191,22 +191,30 @@ function highlight(){
 
 /* ================= SELECT ================= */
 function selectItem(item){
-  selectedItem=item;
-  itemTitle.textContent=item;
+  selectedItem = item;
+  itemTitle.textContent = item;
   details.classList.remove("hidden");
-  suggestions.innerHTML="";
+  suggestions.innerHTML = "";
 
-  dealerList.innerHTML="";
-  (groceries[item]||[]).forEach(d=>{
-    const row=document.createElement("div");
-    row.className="dealer-row";
-    row.innerHTML=`
-      <span><b>${d.dealer}</b> – ₹${d.price}</span>
-      <span>
-        <button class="edit-btn" onclick="editDealer('${d.dealer}',${d.price})">✏️</button>
+  dealerList.innerHTML = "";
+
+  (groceries[item] || []).forEach(d => {
+    const row = document.createElement("div");
+    row.className = "dealer-row";
+
+    row.innerHTML = `
+      <div>
+        <b>${d.dealer}</b> – ₹${d.price}<br>
+        <span style="font-size:12px;color:#666">
+          Last updated: ${d.updated || "N/A"}
+        </span>
+      </div>
+      <div>
+        <button class="edit-btn" onclick="editDealer('${d.dealer}', ${d.price})">✏️</button>
         <button class="delete-btn" onclick="deleteDealer('${d.dealer}')">🗑</button>
-      </span>
+      </div>
     `;
+
     dealerList.appendChild(row);
   });
 }
