@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Grocery Price Manager</title>
+<title>Grocery Dealer Price Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-  font-family:Arial, sans-serif;
+  font-family: Arial, sans-serif;
   background:#f5f5f5;
   padding:20px;
 }
 .container{
-  max-width:420px;
+  max-width:500px;
   margin:auto;
   background:#fff;
   border-radius:8px;
@@ -20,11 +20,7 @@ body{
   padding:20px;
 }
 
-label{
-  font-weight:bold;
-  display:block;
-  margin-top:10px;
-}
+label{font-weight:bold;margin-top:10px;display:block}
 input{
   width:100%;
   height:40px;
@@ -32,24 +28,24 @@ input{
   margin-top:5px;
   border-radius:4px;
   border:1px solid #ccc;
+  box-sizing:border-box;
 }
 
-/* Buttons */
 button{
   width:100%;
   height:42px;
-  margin-top:12px;
+  margin-top:10px;
   border:none;
   border-radius:4px;
   font-size:15px;
   cursor:pointer;
 }
-.edit-btn{background:#007bff;color:#fff;}
-.update-btn{background:#28a745;color:#fff;}
-.delete-btn{background:#dc3545;color:#fff;}
-.add-btn{background:#ffc107;color:#000;}
 
-/* Suggestions */
+.add-btn{background:#28a745;color:#fff}
+.edit-btn{background:#007bff;color:#fff}
+.delete-btn{background:#dc3545;color:#fff}
+.item-btn{background:#6f42c1;color:#fff}
+
 .suggestions{
   border:1px solid #ccc;
   border-top:none;
@@ -66,22 +62,31 @@ button{
   color:#fff;
 }
 
-/* Info */
 .info-box{
   margin-top:15px;
   padding:12px;
   background:#f8f9fa;
   border-radius:6px;
 }
-.price{
-  font-size:22px;
-  font-weight:bold;
+
+.dealer-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#fff;
+  padding:6px;
+  margin-top:6px;
+  border-radius:4px;
 }
-.muted{
-  color:#666;
+.dealer-row button{
+  width:auto;
+  height:30px;
   font-size:13px;
+  margin-left:5px;
 }
-.hidden{display:none;}
+
+.hidden{display:none}
+hr{margin:15px 0}
 </style>
 </head>
 
@@ -89,9 +94,8 @@ button{
 
 <div class="container">
 
-  <label>Search Grocery Item</label>
+  <label>Search Item</label>
   <input
-    type="text"
     id="itemInput"
     placeholder="Type item name..."
     oninput="filterItems()"
@@ -99,56 +103,53 @@ button{
   >
   <div id="suggestions" class="suggestions"></div>
 
+  <!-- ADD ITEM -->
+  <button class="item-btn" onclick="addNewItem()">➕ Add New Item</button>
+
   <div id="details" class="info-box hidden">
+    <h3 id="itemTitle"></h3>
 
-    <div class="price">₹ <span id="currentPrice">0</span></div>
-    <div class="muted">Last Price: ₹ <span id="lastPrice">N/A</span></div>
-    <div class="muted">Last Updated: <span id="lastUpdated">N/A</span></div>
-
-    <!-- Edit section -->
-    <div id="editSection" class="hidden">
-      <label>Edit Price (₹)</label>
-      <input type="number" id="priceInput">
-      <button class="update-btn" onclick="updatePrice()">Update Latest Price</button>
-    </div>
-
-    <button class="edit-btn" id="editBtn" onclick="enableEdit()">✏️ Edit Price</button>
     <button class="delete-btn" onclick="deleteItem()">🗑 Delete Item</button>
-  </div>
 
-  <button class="add-btn" onclick="addNewItem()">➕ Add New Item</button>
+    <div id="dealerList"></div>
+
+    <hr>
+
+    <label>Add Dealer</label>
+    <input id="dealerName" placeholder="Dealer name">
+    <input id="dealerPrice" type="number" placeholder="Price">
+
+    <button class="add-btn" onclick="addDealer()">➕ Add Dealer</button>
+  </div>
 
 </div>
 
 <script>
-/* ================= BACKEND ================= */
+/* ================= CONFIG ================= */
 const API_URL =
-"https://script.google.com/macros/s/AKfycbwzdNYP5zU0X_1ZpLIw61XczqOYBeMDzdfccel3QaVGiJSswS-OYWRMg2mPOyL9Tn-q/exec";
-const API_KEY = "9848o22338B!"; // <-- SAME key as Apps Script
+"https://script.google.com/macros/s/AKfycbzRt_ad2rXgZNVO4_Nlumm8EAxN7jcG7gG1y0yKEec7WXnws68ygcAqrhCjRzcmdWzl/exec";
+const API_KEY = "9848o22338B!";
 
 /* ================= STATE ================= */
 let groceries = {};
-let selectedItem = "";
 let filteredItems = [];
 let activeIndex = -1;
+let selectedItem = "";
 
-/* ================= LOAD DATA ================= */
+/* ================= LOAD ================= */
 window.onload = () => {
-   fetch(`${API_URL}?key=${API_KEY}`)
-    .then(res => res.json())
-    .then(data => groceries = data || {})
-    .catch(err => {
-      alert("Failed to load data from Google Sheets");
-      console.error(err);
-    });
+  fetch(`${API_URL}?key=${API_KEY}`)
+    .then(r => r.text())
+    .then(text => groceries = JSON.parse(text || "{}"))
+    .catch(() => alert("Failed to load data"));
 };
 
 /* ================= AUTOCOMPLETE ================= */
 function filterItems(){
   const val = itemInput.value.toLowerCase();
-  suggestions.innerHTML = "";
-  filteredItems = [];
-  activeIndex = -1;
+  suggestions.innerHTML="";
+  filteredItems=[];
+  activeIndex=-1;
 
   if(!val) return;
 
@@ -156,129 +157,167 @@ function filterItems(){
     .filter(i => i.toLowerCase().includes(val));
 
   filteredItems.forEach(i=>{
-    const d = document.createElement("div");
-    d.textContent = i;
-    d.onclick = () => selectItem(i);
+    const d=document.createElement("div");
+    d.textContent=i;
+    d.onclick=()=>selectItem(i);
     suggestions.appendChild(d);
   });
 }
 
-/* ================= KEYBOARD ================= */
+/* ================= KEYS ================= */
 function handleKeys(e){
-  if(filteredItems.length === 0) return;
+  if(!filteredItems.length) return;
 
-  if(e.key === "ArrowDown"){
+  if(e.key==="ArrowDown"){
     e.preventDefault();
-    activeIndex = (activeIndex + 1) % filteredItems.length;
+    activeIndex=(activeIndex+1)%filteredItems.length;
     highlight();
-  }
-  else if(e.key === "ArrowUp"){
+  }else if(e.key==="ArrowUp"){
     e.preventDefault();
-    activeIndex = (activeIndex - 1 + filteredItems.length) % filteredItems.length;
+    activeIndex=(activeIndex-1+filteredItems.length)%filteredItems.length;
     highlight();
-  }
-  else if(e.key === "Enter" || e.key === "Tab"){
+  }else if(e.key==="Enter"||e.key==="Tab"){
     e.preventDefault();
-    if(activeIndex === -1) activeIndex = 0;
+    if(activeIndex===-1) activeIndex=0;
     selectItem(filteredItems[activeIndex]);
   }
 }
 
 function highlight(){
   [...suggestions.children].forEach((el,i)=>{
-    el.classList.toggle("active", i === activeIndex);
+    el.classList.toggle("active",i===activeIndex);
   });
 }
 
 /* ================= SELECT ================= */
 function selectItem(item){
-  selectedItem = item;
-  const g = groceries[item];
-
-  itemInput.value = item;
-  suggestions.innerHTML = "";
-  filteredItems = [];
-  activeIndex = -1;
-
+  selectedItem=item;
+  itemTitle.textContent=item;
   details.classList.remove("hidden");
-  editSection.classList.add("hidden");
-  editBtn.classList.remove("hidden");
+  suggestions.innerHTML="";
 
-  currentPrice.textContent = g.price;
-  lastPrice.textContent = g.lastPrice ?? "N/A";
-  lastUpdated.textContent = g.updated ?? "N/A";
+  dealerList.innerHTML="";
+  (groceries[item]||[]).forEach(d=>{
+    const row=document.createElement("div");
+    row.className="dealer-row";
+    row.innerHTML=`
+      <span><b>${d.dealer}</b> – ₹${d.price}</span>
+      <span>
+        <button class="edit-btn" onclick="editDealer('${d.dealer}',${d.price})">✏️</button>
+        <button class="delete-btn" onclick="deleteDealer('${d.dealer}')">🗑</button>
+      </span>
+    `;
+    dealerList.appendChild(row);
+  });
 }
 
-/* ================= EDIT ================= */
-function enableEdit(){
-  priceInput.value = groceries[selectedItem].price;
-  editSection.classList.remove("hidden");
-  editBtn.classList.add("hidden");
-}
+/* ================= ADD ITEM ================= */
+function addNewItem(){
+  const item = prompt("Enter item name:");
+  if(!item || groceries[item]) return alert("Item exists");
 
-/* ================= UPDATE ================= */
-function updatePrice(){
-  const val = Number(priceInput.value);
-  if(isNaN(val)) return;
+  const dealer = prompt("Enter dealer name:");
+  const price = Number(prompt("Enter price:"));
+  if(!dealer || isNaN(price)) return;
 
   fetch(API_URL,{
     method:"POST",
-    body: JSON.stringify({
-      key: API_KEY,
-      action:"update",
-      item:selectedItem,
-      price:val
+    body:JSON.stringify({
+      key:API_KEY,
+      action:"add",
+      item,
+      dealer,
+      price
     })
   }).then(()=>{
-    groceries[selectedItem].lastPrice = groceries[selectedItem].price;
-    groceries[selectedItem].price = val;
-    groceries[selectedItem].updated = new Date().toLocaleString();
+    groceries[item]=[{dealer,price}];
+    selectItem(item);
+  });
+}
+
+/* ================= DELETE ITEM ================= */
+function deleteItem(){
+  if(!confirm(`Delete item "${selectedItem}" and all dealers?`)) return;
+
+  const dealers = groceries[selectedItem] || [];
+  Promise.all(dealers.map(d =>
+    fetch(API_URL,{
+      method:"POST",
+      body:JSON.stringify({
+        key:API_KEY,
+        action:"delete",
+        item:selectedItem,
+        dealer:d.dealer
+      })
+    })
+  )).then(()=>{
+    delete groceries[selectedItem];
+    selectedItem="";
+    details.classList.add("hidden");
+    itemInput.value="";
+  });
+}
+
+/* ================= ADD DEALER ================= */
+function addDealer(){
+  const dealer=dealerName.value.trim();
+  const price=Number(dealerPrice.value);
+  if(!dealer||isNaN(price)) return;
+
+  fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      key:API_KEY,
+      action:"add",
+      item:selectedItem,
+      dealer,
+      price
+    })
+  }).then(()=>{
+    groceries[selectedItem].push({dealer,price});
+    dealerName.value="";
+    dealerPrice.value="";
     selectItem(selectedItem);
   });
 }
 
-/* ================= ADD ================= */
-function addNewItem(){
-  const name = prompt("Enter new item name:");
-  if(!name || groceries[name]) return;
-
-  const price = prompt("Enter initial price:");
-  if(!price || isNaN(price)) return;
+/* ================= EDIT DEALER ================= */
+function editDealer(dealer,oldPrice){
+  const price=prompt("Update price:",oldPrice);
+  if(!price||isNaN(price)) return;
 
   fetch(API_URL,{
     method:"POST",
-    body: JSON.stringify({
-      key: API_KEY,
-      action:"add",
-      item:name,
+    body:JSON.stringify({
+      key:API_KEY,
+      action:"update",
+      item:selectedItem,
+      dealer,
       price:Number(price)
     })
   }).then(()=>{
-    groceries[name] = {
-      price:Number(price),
-      lastPrice:null,
-      updated:new Date().toLocaleString()
-    };
-    selectItem(name);
+    groceries[selectedItem].forEach(d=>{
+      if(d.dealer===dealer) d.price=Number(price);
+    });
+    selectItem(selectedItem);
   });
 }
 
-/* ================= DELETE ================= */
-function deleteItem(){
-  if(!confirm(`Delete "${selectedItem}" permanently?`)) return;
+/* ================= DELETE DEALER ================= */
+function deleteDealer(dealer){
+  if(!confirm(`Delete dealer ${dealer}?`)) return;
 
   fetch(API_URL,{
     method:"POST",
-    body: JSON.stringify({
-      key: API_KEY,
+    body:JSON.stringify({
+      key:API_KEY,
       action:"delete",
-      item:selectedItem
+      item:selectedItem,
+      dealer
     })
   }).then(()=>{
-    delete groceries[selectedItem];
-    selectedItem="";
-    itemInput.value="";
-    details.classList.add("hidden");
+    groceries[selectedItem]=groceries[selectedItem].filter(d=>d.dealer!==dealer);
+    selectItem(selectedItem);
   });
 }
 </script>
