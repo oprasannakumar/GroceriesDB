@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Grocery Dealer Price Manager</title>
+<title>Grocery Price Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,7 +12,7 @@ body{
   padding:20px;
 }
 .container{
-  max-width:500px;
+  max-width:480px;
   margin:auto;
   background:#fff;
   border-radius:8px;
@@ -20,7 +20,8 @@ body{
   padding:20px;
 }
 
-label{font-weight:bold;margin-top:10px;display:block}
+/* Inputs */
+label{font-weight:bold;display:block;margin-top:10px}
 input{
   width:100%;
   height:40px;
@@ -31,21 +32,27 @@ input{
   box-sizing:border-box;
 }
 
+/* Buttons */
 button{
-  width:100%;
-  height:42px;
-  margin-top:10px;
   border:none;
   border-radius:4px;
-  font-size:15px;
   cursor:pointer;
 }
 
-.add-btn{background:#28a745;color:#fff}
-.edit-btn{background:#007bff;color:#fff}
-.delete-btn{background:#dc3545;color:#fff}
-.item-btn{background:#6f42c1;color:#fff}
+.primary-btn{
+  width:100%;
+  height:36px;
+  font-size:14px;
+  margin-top:8px;
+}
 
+.add-item-btn{background:#6f42c1;color:#fff}
+.add-dealer-btn{background:#28a745;color:#fff}
+.cancel-btn{background:#6c757d;color:#fff}
+.edit-btn{background:#007bff;color:#fff;height:28px;font-size:12px}
+.delete-btn{background:#dc3545;color:#fff;height:28px;font-size:12px}
+
+/* Suggestions */
 .suggestions{
   border:1px solid #ccc;
   border-top:none;
@@ -62,6 +69,7 @@ button{
   color:#fff;
 }
 
+/* Info */
 .info-box{
   margin-top:15px;
   padding:12px;
@@ -78,15 +86,13 @@ button{
   margin-top:6px;
   border-radius:4px;
 }
-.dealer-row button{
-  width:auto;
-  height:30px;
-  font-size:13px;
-  margin-left:5px;
+
+.dealer-meta{
+  font-size:12px;
+  color:#666;
 }
 
 .hidden{display:none}
-hr{margin:15px 0}
 </style>
 </head>
 
@@ -94,32 +100,35 @@ hr{margin:15px 0}
 
 <div class="container">
 
-  <label>Search Item</label>
+  <!-- SEARCH / ITEM INPUT -->
+  <label>Item</label>
   <input
     id="itemInput"
-    placeholder="Type item name..."
+    placeholder="Type or select item..."
     oninput="filterItems()"
     onkeydown="handleKeys(event)"
   >
   <div id="suggestions" class="suggestions"></div>
 
-  <!-- ADD ITEM -->
-  <button class="item-btn" onclick="addNewItem()">➕ Add New Item</button>
+  <!-- ACTION BUTTONS -->
+  <button class="primary-btn add-item-btn" onclick="addNewItem()">➕ Add Item</button>
+  <button class="primary-btn add-dealer-btn" onclick="showAddDealer()">➕ Add Dealer</button>
 
-  <div id="details" class="info-box hidden">
-    <h3 id="itemTitle"></h3>
-
-    <button class="delete-btn" onclick="deleteItem()">🗑 Delete Item</button>
-
-    <div id="dealerList"></div>
-
-    <hr>
-
-    <label>Add Dealer</label>
+  <!-- ADD DEALER FORM (HIDDEN INITIALLY) -->
+  <div id="addDealerBox" class="info-box hidden">
+    <label>Dealer Name</label>
     <input id="dealerName" placeholder="Dealer name">
+
+    <label>Price</label>
     <input id="dealerPrice" type="number" placeholder="Price">
 
-    <button class="add-btn" onclick="addDealer()">➕ Add Dealer</button>
+    <button class="primary-btn add-dealer-btn" onclick="addDealer()">Save Dealer</button>
+    <button class="primary-btn cancel-btn" onclick="hideAddDealer()">Cancel</button>
+  </div>
+
+  <!-- DEALER LIST -->
+  <div id="details" class="info-box hidden">
+    <div id="dealerList"></div>
   </div>
 
 </div>
@@ -136,11 +145,11 @@ let filteredItems = [];
 let activeIndex = -1;
 let selectedItem = "";
 
-/* ================= LOAD ================= */
+/* ================= LOAD DATA ================= */
 window.onload = () => {
   fetch(`${API_URL}?key=${API_KEY}`)
     .then(r => r.text())
-    .then(text => groceries = JSON.parse(text || "{}"))
+    .then(t => groceries = JSON.parse(t || "{}"))
     .catch(() => alert("Failed to load data"));
 };
 
@@ -164,7 +173,7 @@ function filterItems(){
   });
 }
 
-/* ================= KEYS ================= */
+/* ================= KEYBOARD ================= */
 function handleKeys(e){
   if(!filteredItems.length) return;
 
@@ -189,40 +198,38 @@ function highlight(){
   });
 }
 
-/* ================= SELECT ================= */
+/* ================= SELECT ITEM ================= */
 function selectItem(item){
-  selectedItem = item;
-  itemTitle.textContent = item;
+  selectedItem=item;
+  itemInput.value=item;
+
+  suggestions.innerHTML="";
   details.classList.remove("hidden");
-  suggestions.innerHTML = "";
 
-  dealerList.innerHTML = "";
-
-  (groceries[item] || []).forEach(d => {
-    const row = document.createElement("div");
-    row.className = "dealer-row";
-
-    row.innerHTML = `
+  dealerList.innerHTML="";
+  (groceries[item]||[]).forEach(d=>{
+    const row=document.createElement("div");
+    row.className="dealer-row";
+    row.innerHTML=`
       <div>
         <b>${d.dealer}</b> – ₹${d.price}<br>
-        <span style="font-size:12px;color:#666">
+        <span class="dealer-meta">
           Last updated: ${d.updated || "N/A"}
         </span>
       </div>
       <div>
-        <button class="edit-btn" onclick="editDealer('${d.dealer}', ${d.price})">✏️</button>
+        <button class="edit-btn" onclick="editDealer('${d.dealer}',${d.price})">✏️</button>
         <button class="delete-btn" onclick="deleteDealer('${d.dealer}')">🗑</button>
       </div>
     `;
-
     dealerList.appendChild(row);
   });
 }
 
 /* ================= ADD ITEM ================= */
 function addNewItem(){
-  const item = prompt("Enter item name:");
-  if(!item || groceries[item]) return alert("Item exists");
+  const item = prompt("Enter new item name:");
+  if(!item || groceries[item]) return;
 
   const dealer = prompt("Enter dealer name:");
   const price = Number(prompt("Enter price:"));
@@ -238,35 +245,23 @@ function addNewItem(){
       price
     })
   }).then(()=>{
-    groceries[item]=[{dealer,price}];
+    groceries[item]=[{dealer,price,updated:new Date().toLocaleString()}];
     selectItem(item);
   });
 }
 
-/* ================= DELETE ITEM ================= */
-function deleteItem(){
-  if(!confirm(`Delete item "${selectedItem}" and all dealers?`)) return;
-
-  const dealers = groceries[selectedItem] || [];
-  Promise.all(dealers.map(d =>
-    fetch(API_URL,{
-      method:"POST",
-      body:JSON.stringify({
-        key:API_KEY,
-        action:"delete",
-        item:selectedItem,
-        dealer:d.dealer
-      })
-    })
-  )).then(()=>{
-    delete groceries[selectedItem];
-    selectedItem="";
-    details.classList.add("hidden");
-    itemInput.value="";
-  });
+/* ================= ADD DEALER ================= */
+function showAddDealer(){
+  if(!selectedItem) return alert("Select an item first");
+  addDealerBox.classList.remove("hidden");
 }
 
-/* ================= ADD DEALER ================= */
+function hideAddDealer(){
+  addDealerBox.classList.add("hidden");
+  dealerName.value="";
+  dealerPrice.value="";
+}
+
 function addDealer(){
   const dealer=dealerName.value.trim();
   const price=Number(dealerPrice.value);
@@ -282,9 +277,10 @@ function addDealer(){
       price
     })
   }).then(()=>{
-    groceries[selectedItem].push({dealer,price});
-    dealerName.value="";
-    dealerPrice.value="";
+    groceries[selectedItem].push({
+      dealer,price,updated:new Date().toLocaleString()
+    });
+    hideAddDealer();
     selectItem(selectedItem);
   });
 }
@@ -305,7 +301,10 @@ function editDealer(dealer,oldPrice){
     })
   }).then(()=>{
     groceries[selectedItem].forEach(d=>{
-      if(d.dealer===dealer) d.price=Number(price);
+      if(d.dealer===dealer){
+        d.price=Number(price);
+        d.updated=new Date().toLocaleString();
+      }
     });
     selectItem(selectedItem);
   });
