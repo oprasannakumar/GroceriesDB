@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>Grocery Price Manager</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f5f5f5">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -381,6 +385,15 @@ function cancelForms(){
   dealerSug1.innerHTML=""; dealerSug2.innerHTML="";
 }
 </script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Price list app installed'))
+        .catch(err => console.log('PWA Registration Failed', err));
+    });
+  }
+</script>
 </body>
 </html>
+
