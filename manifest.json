@@ -3,7 +3,7 @@
   "short_name": "Price List",
   "description": "Lookup, add, and manage invoices with real-time sync.",
   "start_url": "./index.html",
-  "display: "standalone",
+  "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#f5f5f5",
   "icons": [
