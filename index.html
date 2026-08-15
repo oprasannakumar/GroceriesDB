@@ -2,398 +2,859 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Grocery Price Manager</title>
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f5f5f5">
+<title>Grocery & Shopping Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f1f5f9">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f5f5f5;
-  padding:20px;
-  display:flex;
-  justify-content:center;
+:root {
+  --primary: #4f46e5;
+  --danger: #dc2626;
+  --success: #28a745;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --muted: #64748b;
 }
 
-.container{
-  width:100%;
-  max-width:460px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 0 10px rgba(0,0,0,.1);
-  padding:18px;
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
 }
-
-/* Centered form content */
-/* Perfect visual centering */
-.form-center{
-  width: 92%;
-  max-width: 380px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Inputs centered optically */
-input{
+.container {
   width: 100%;
-  height: 38px;
-  padding: 8px 10px;
+  max-width: 520px;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.1);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tab-btn {
+  flex: 1;
+  height: 46px;
+  margin-top: 0;
+  border-radius: 12px;
+  background: #e2e8f0;
+  color: #333;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.tab-btn.active {
+  background: var(--primary);
+  color: #fff;
+}
+.view-section { display: none; }
+.view-section.active { display: block; }
+
+h2 { text-align: center; margin: 6px 0 12px; }
+
+/* Forms & Inputs */
+.form-center {
+  width: 100%;
+  max-width: 100%;
+  margin: auto;
+}
+input {
+  width: 100%;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 0 14px;
   margin-top: 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
   font-size: 14px;
-  box-sizing: border-box;
+}
+label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
 }
 
-/* Suggestions aligned exactly with inputs */
-.form-center .suggestions{
-  width: 100%;
+/* Input Group for AI Button */
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
 }
-
-label{
-  font-size:13px;
-  font-weight:600;
-  margin-top:10px;
-  display:block;
+.input-group input {
+  margin-top: 0;
 }
-
-input{
-  width:100%;
-  height:38px;
-  padding:8px;
-  margin-top:6px;
-  border-radius:4px;
-  border:1px solid #ccc;
-  font-size:14px;
+.ai-btn {
+  width: 46px;
+  height: 46px;
+  margin-top: 0;
+  background: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border-radius: 12px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.1s;
 }
-
-/* Buttons */
-button{
-  border:none;
-  border-radius:4px;
-  cursor:pointer;
-  font-size:13px;
-}
-.primary-btn{
-  width:100%;
-  height:36px;
-  margin-top:10px;
-}
-.add-item-btn{background:#6f42c1;color:#fff}
-.add-dealer-btn{background:#28a745;color:#fff}
-.cancel-btn{background:#6c757d;color:#fff}
-
-.edit-btn,
-.delete-btn{
-  padding:6px 12px;
-  font-size:14px;
-  height:32px;
-}
-.edit-btn{background:#007bff;color:#fff}
-.delete-btn{background:#dc3545;color:#fff}
+.ai-btn:active { transform: scale(0.95); }
 
 /* Suggestions */
-.suggestions{
-  width:100%;
-  border:1px solid #ccc;
-  border-top:none;
-  max-height:150px;
-  overflow-y:auto;
+.suggestions {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  max-height: 160px;
+  overflow: auto;
 }
-.suggestions div{
-  padding:8px;
-  cursor:pointer;
+.suggestions div {
+  padding: 12px;
+  cursor: pointer;
 }
-.suggestions div.active,
-.suggestions div:hover{
-  background:#007bff;
-  color:#fff;
-}
-
-/* Info boxes */
-.info-box{
-  margin-top:16px;
-  padding:14px;
-  background:#e9ecef;
-  border-radius:6px;
+.suggestions div:hover, .suggestions div.active {
+  background: #eef2ff;
+  color: var(--primary);
 }
 
-/* Dealer list */
-.dealer-row{
-  background:#fff;
-  padding:10px;
-  margin-top:10px;
-  border-radius:4px;
-  font-size:13px;
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-}
-.dealer-info{flex:1}
-.dealer-actions{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
+/* Item Formatting */
+.alt-text {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: normal;
+  margin-left: 4px;
 }
 
-.hidden{display:none}
+/* Shopping Item List */
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+.item-name { font-weight: 600; line-height: 1.4; }
+.item-price { color: #16a34a; font-weight: 700; white-space: nowrap; margin-left: 10px; }
+
+/* Shopping Basket */
+.basket {
+  margin-top: 18px;
+  border-top: 2px dashed var(--border);
+  padding-top: 14px;
+}
+.basket-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.qty-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  align-items: center;
+}
+.qty-row input {
+  width: 90px;
+  height: 38px;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 0;
+}
+.remove { color: var(--danger); cursor: pointer; font-size: 14px; font-weight: 600; padding: 5px 10px; }
+.custom-tag { font-size: 11px; color: var(--muted); margin-left: 6px; }
+
+/* Buttons */
+button {
+  width: 100%;
+  height: 46px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+.add-custom { background: #6b7280; }
+.add-item-btn { background: #6f42c1; color: #fff; }
+.add-dealer-btn { background: var(--success); color: #fff; }
+.cancel-btn { background: #6c757d; color: #fff; }
+.edit-btn, .delete-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  height: 32px;
+  width: auto;
+  border-radius: 8px;
+  margin-top: 0;
+}
+.edit-btn { background: #007bff; color: #fff; }
+.delete-btn { background: #dc3545; color: #fff; }
+
+/* Info Boxes */
+.info-box {
+  margin-top: 16px;
+  padding: 14px;
+  background: #e9ecef;
+  border-radius: 12px;
+}
+
+/* Dealer Manager List */
+.dealer-row {
+  background: #fff;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+}
+.dealer-info { flex: 1; }
+.dealer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Utilities */
+.hidden { display: none !important; }
+
+/* TOAST */
+.toast {
+  display: none;
+  background: #eef2ff;
+  color: #1e3a8a;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  text-align: center;
+  animation: fadeSlide .25s ease;
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 </style>
 </head>
 
 <body>
 
+<!-- TOAST NOTIFICATIONS OVERLAY -->
+<div id="toast" class="toast"></div>
+
 <div class="container">
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tabShop" onclick="switchTab('shopping')">🛒 Shopping</button>
+    <button class="tab-btn" id="tabManage" onclick="switchTab('manage')">⚙️ Manage</button>
+  </div>
 
-  <!-- STATUS -->
-  <div id="statusMsg" style="text-align:center;font-size:12px;color:#555;"></div>
+  <div id="statusMsg" style="text-align:center;font-size:13px;color:var(--primary);font-weight:bold;margin-bottom:8px;"></div>
 
-  <!-- ITEM SEARCH -->
-  <div id="itemSearchBox">
-    <div class="form-center">
-      <label>Item</label>
-      <input id="itemInput"
-             placeholder="Type or select item..."
-             oninput="filterItems()"
-             onkeydown="handleItemKeys(event)">
-      <div id="itemSuggestions" class="suggestions"></div>
+  <!-- ==================== SHOPPING LIST VIEW ==================== -->
+  <div id="shoppingView" class="view-section active">
+    <input id="dealerInput" placeholder="Select store…" oninput="filterDealers()">
+    <div id="dealerSug" class="suggestions"></div>
+    <div id="items"></div>
+    <button class="add-custom" onclick="addCustomItem()">➕ Not in the list?</button>
+
+    <div id="basket" class="basket" style="display:none">
+      <h3>Your List</h3>
+      <div id="basketItems"></div>
+      <button onclick="sendToGoogleTasks()">Add to Google To-Do</button>
     </div>
   </div>
 
-  <!-- ACTION BUTTONS -->
-  <div id="actionButtons" class="form-center">
-    <button class="primary-btn add-item-btn" onclick="showAddItem()">➕ Add Item</button>
-    <button id="addDealerBtn"
-            class="primary-btn add-dealer-btn hidden"
-            onclick="showAddDealer()">➕ Add Dealer</button>
-  </div>
-
-  <!-- ADD ITEM -->
-  <div id="addItemBox" class="info-box hidden">
-    <div class="form-center">
-      <label>Item Name</label>
-      <input id="newItemName">
-
-      <label>Dealer</label>
-      <input id="newItemDealer"
-             oninput="filterDealerSuggestions(this,'dealerSug1')"
-             onkeydown="handleDealerKeys(event,'dealerSug1',this)">
-      <div id="dealerSug1" class="suggestions"></div>
-
-      <label>Price</label>
-      <input id="newItemPrice" type="number"
-             onkeydown="handlePriceEnter(event,'item')">
-
-      <button class="primary-btn add-item-btn" onclick="addItem()">Save Item</button>
-      <button class="primary-btn cancel-btn" onclick="cancelForms()">Cancel</button>
+  <!-- ==================== PRICE MANAGER VIEW ==================== -->
+  <div id="manageView" class="view-section">
+    
+    <div id="itemSearchBox">
+      <div class="form-center">
+        <label>Search / Edit Catalog Item</label>
+        <input id="itemInput" placeholder="Type English or Alternate name..." oninput="filterItems()" onkeydown="handleItemKeys(event)">
+        <div id="itemSuggestions" class="suggestions"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- ADD DEALER -->
-  <div id="addDealerBox" class="info-box hidden">
-    <div class="form-center">
-      <label>Dealer</label>
-      <input id="dealerName"
-             oninput="filterDealerSuggestions(this,'dealerSug2')"
-             onkeydown="handleDealerKeys(event,'dealerSug2',this)">
-      <div id="dealerSug2" class="suggestions"></div>
-
-      <label>Price</label>
-      <input id="dealerPrice" type="number"
-             onkeydown="handlePriceEnter(event,'dealer')">
-
-      <button class="primary-btn add-dealer-btn" onclick="addDealer()">Save Dealer</button>
-      <button class="primary-btn cancel-btn" onclick="cancelForms()">Cancel</button>
+    <div id="actionButtons" class="form-center">
+      <button class="add-item-btn" onclick="showAddItem()">➕ Add New Catalog Item</button>
+      <button id="addDealerBtn" class="add-dealer-btn hidden" onclick="showAddDealer()">➕ Add Dealer to Item</button>
     </div>
-  </div>
 
-  <!-- DEALER LIST -->
-  <div id="details" class="info-box hidden">
-    <div class="form-center">
-      <button class="primary-btn delete-btn" onclick="deleteItem()">🗑 Delete Item</button>
-      <div id="dealerList"></div>
+    <!-- ADD ITEM BOX WITH AI BUTTON -->
+    <div id="addItemBox" class="info-box hidden">
+      <div class="form-center">
+        
+        <label>Primary Name (e.g. Menthikura)</label>
+        <div class="input-group">
+          <input id="newItemName" style="flex:1;">
+          <button type="button" class="ai-btn" onclick="suggestWithAI()" title="Auto-translate with Groq AI">🪄</button>
+        </div>
+
+        <label>Alternate Name <span style="font-weight:normal">(Optional - e.g. Fenugreek)</span></label>
+        <input id="newAltName" placeholder="Type or click 🪄">
+
+        <label>Dealer</label>
+        <input id="newItemDealer" oninput="filterDealerSuggestions(this,'dealerSug1')" onkeydown="handleDealerKeys(event,'dealerSug1',this)">
+        <div id="dealerSug1" class="suggestions"></div>
+
+        <label>Price</label>
+        <input id="newItemPrice" type="number" onkeydown="handlePriceEnter(event,'item')">
+
+        <button class="add-item-btn" onclick="saveNewItem()">Save Item</button>
+        <button class="cancel-btn" onclick="cancelForms()">Cancel</button>
+      </div>
     </div>
-  </div>
 
+    <div id="addDealerBox" class="info-box hidden">
+      <div class="form-center">
+        <label>Dealer</label>
+        <input id="dealerName" oninput="filterDealerSuggestions(this,'dealerSug2')" onkeydown="handleDealerKeys(event,'dealerSug2',this)">
+        <div id="dealerSug2" class="suggestions"></div>
+
+        <label>Price</label>
+        <input id="dealerPrice" type="number" onkeydown="handlePriceEnter(event,'dealer')">
+
+        <button class="add-dealer-btn" onclick="addDealer()">Save Dealer</button>
+        <button class="cancel-btn" onclick="cancelForms()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="details" class="info-box hidden">
+      <div class="form-center">
+        <button class="delete-btn" style="width:100%; height:46px; margin-bottom:10px;" onclick="deleteItem()">🗑 Delete Entire Item</button>
+        <div id="dealerList"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-/* -------- JS LOGIC UNCHANGED (WORKING) -------- */
-const API_URL="https://script.google.com/macros/s/AKfycbzRt_ad2rXgZNVO4_Nlumm8EAxN7jcG7gG1y0yKEec7WXnws68ygcAqrhCjRzcmdWzl/exec";
-const API_KEY="9848o22338B!";
+/* ---------- SHARED CONSTANTS & STATE ---------- */
+const API_URL = "https://script.google.com/macros/s/AKfycbzRt_ad2rXgZNVO4_Nlumm8EAxN7jcG7gG1y0yKEec7WXnws68ygcAqrhCjRzcmdWzl/exec";
+const API_KEY = "9848o22338B!";
+const TASK_API_URL = "https://script.google.com/macros/s/AKfycbz0d_gOUxq6w7geJvlt9R1hUaR8aLItOBsI1p3Cd6UCS2p1lCGvaAzVWG7rVK2tMJnE7Q/exec";
 
-let groceries={},selectedItem="";
-let filteredItems=[],itemIndex=-1;
-let dealerIndex={};
 
-window.onload=()=>fetch(`${API_URL}?key=${API_KEY}`).then(r=>r.json()).then(d=>groceries=d||{});
 
-function handlePriceEnter(e,type){ if(e.key==="Enter"){ e.preventDefault(); type==="item"?addItem():addDealer(); } }
-function showStatus(m){statusMsg.textContent=m;}
-function clearStatus(){setTimeout(()=>statusMsg.textContent="",1500);}
-function save(p,cb){showStatus("Saving...");fetch(API_URL,{method:"POST",body:JSON.stringify({...p,key:API_KEY})}).then(()=>clearStatus());cb();}
+let groceries = {};
+let dealers = [];
+let cart = {};
+const basketBox = document.getElementById("basket");
+let selectedItem = "";
+let filteredItems = [];
+let itemIndex = -1;
+let dealerIndex = {};
 
-function filterItems(){
-  const v=itemInput.value.toLowerCase();
-  itemSuggestions.innerHTML=""; filteredItems=[]; itemIndex=-1;
+/* ---------- INITIAL LOAD & OFFLINE SYNC ---------- */
+window.onload = () => {
+  const cachedGroceries = localStorage.getItem('grocery_catalog');
+  if (cachedGroceries) {
+    groceries = JSON.parse(cachedGroceries);
+    initDealers();
+  }
+  
+  const cachedCart = localStorage.getItem('grocery_cart');
+  if (cachedCart) {
+    cart = JSON.parse(cachedCart);
+    renderBasket();
+  }
+
+  if (navigator.onLine) {
+    fetchData();
+  } else {
+    showStatus("Offline Mode: Using saved data.");
+  }
+};
+
+window.addEventListener('online', () => { showStatus("Back online! Syncing..."); fetchData(); });
+window.addEventListener('offline', () => { showStatus("Offline Mode: Using saved data."); });
+
+function fetchData() {
+  fetch(`${API_URL}?key=${API_KEY}`)
+    .then(r => r.json())
+    .then(d => {
+      groceries = d || {};
+      localStorage.setItem('grocery_catalog', JSON.stringify(groceries));
+      initDealers();
+      if(dealerInput.value) showItems(dealerInput.value); 
+      clearStatus();
+    })
+    .catch(err => { console.log("Fetch failed, using cache."); });
+}
+
+function formatItemName(rawName) {
+  if(rawName.includes('|')) {
+    const parts = rawName.split('|').map(s => s.trim());
+    return `<span>${parts[0]}</span> <span class="alt-text">(${parts[1]})</span>`;
+  }
+  return `<span>${rawName}</span>`;
+}
+
+function switchTab(tab) {
+  document.getElementById("shoppingView").classList.remove("active");
+  document.getElementById("manageView").classList.remove("active");
+  document.getElementById("tabShop").classList.remove("active");
+  document.getElementById("tabManage").classList.remove("active");
+
+  if(tab === 'shopping') {
+    document.getElementById("shoppingView").classList.add("active");
+    document.getElementById("tabShop").classList.add("active");
+  } else {
+    document.getElementById("manageView").classList.add("active");
+    document.getElementById("tabManage").classList.add("active");
+  }
+}
+
+function getGroqKey() {
+  let key = localStorage.getItem('groq_api_key');
+  if (!key) {
+    key = prompt("Please enter your Groq API Key to use the Magic Wand (it will be saved securely on your device):");
+    if (key) {
+      localStorage.setItem('groq_api_key', key.trim());
+    }
+  }
+  return key;
+}
+
+async function suggestWithAI() {
+  const primaryName = document.getElementById('newItemName').value.trim();
+  const altInput = document.getElementById('newAltName');
+
+  if (!primaryName) {
+    showToast("Type a name first before using the Magic Wand! 🪄");
+    return;
+  }
+  if (!navigator.onLine) {
+    showToast("AI requires an internet connection.");
+    return;
+  }
+
+  // Get the key securely from local storage
+  const apiKey = getGroqKey();
+  if (!apiKey) {
+    showToast("❌ API Key is required.");
+    return;
+  }
+
+  altInput.placeholder = "Asking Groq AI...";
+  altInput.value = "";
+  
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are a grocery and ingredient translation assistant. Given an Indian vegetable, spice, or grocery item name, reply ONLY with its most common English name. Do not include explanations, quotes, periods, or extra text."
+          },
+          {
+            role: "user",
+            content: primaryName
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 30
+      })
+    });
+
+    const data = await response.json();
+    
+    // If the API key is wrong, delete it so the prompt asks again next time
+    if (data.error) {
+      if (response.status === 401 || data.error.message.toLowerCase().includes("key")) {
+        localStorage.removeItem('groq_api_key');
+        showToast("❌ Invalid API Key. Please try again.");
+      }
+      throw new Error(data.error.message);
+    }
+
+    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+      const aiText = data.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+      altInput.value = aiText;
+      showToast("✨ AI Suggestion added!");
+    } else {
+      showToast("🤔 AI couldn't find a match.");
+    }
+  } catch (err) {
+    console.error("Groq AI Error:", err);
+    showToast("❌ AI request failed.");
+    altInput.placeholder = "Type or click 🪄";
+  }
+}
+
+/* =========================================================================
+   SHOPPING LIST LOGIC
+   ========================================================================= */
+function initDealers() {
+  const s = new Set();
+  Object.values(groceries).forEach(a => a.forEach(d => s.add(d.dealer)));
+  dealers = [...s];
+}
+
+function filterDealers() {
+  dealerSug.innerHTML = "";
+  const v = dealerInput.value.toLowerCase();
   if(!v) return;
-  filteredItems=Object.keys(groceries).filter(i=>i.toLowerCase().includes(v));
-  filteredItems.forEach(i=>{
-    const d=document.createElement("div");
-    d.textContent=i; d.onclick=()=>selectItem(i);
+  dealers.filter(d => d.toLowerCase().includes(v)).forEach(d => {
+    const div = document.createElement("div");
+    div.textContent = d;
+    div.onclick = () => selectDealer(d);
+    dealerSug.appendChild(div);
+  });
+}
+
+function selectDealer(dealer) {
+  dealerInput.value = dealer;
+  dealerSug.innerHTML = "";
+  showItems(dealer);
+}
+
+function showItems(dealer) {
+  items.innerHTML = "";
+  const list = [];
+  Object.keys(groceries).forEach(item => {
+    groceries[item].forEach(d => {
+      if(d.dealer === dealer) list.push({ name: item, price: d.price });
+    });
+  });
+  list.sort((a,b) => a.name.localeCompare(b.name));
+  list.forEach(o => {
+    const safeName = o.name.replace(/'/g, "\\'");
+    items.innerHTML += `
+      <div class="item" onclick="addCartItem('${safeName}', ${o.price})">
+        <div class="item-name">${formatItemName(o.name)}</div>
+        <div class="item-price">₹${o.price}</div>
+      </div>`;
+  });
+}
+
+function addCartItem(item, price) {
+  const key = item.toLowerCase();
+  const existing = Object.keys(cart).find(k => k.toLowerCase() === key);
+  if(existing) {
+    cart[existing].qty += 1;
+    showToast(`Quantity updated`);
+  } else {
+    cart[item] = { qty: 1, price, custom: false };
+    showToast(`Added to list`);
+  }
+  renderBasket();
+}
+
+function addCustomItem() {
+  const name = prompt("Enter item name");
+  if(!name) return;
+  const key = name.toLowerCase();
+  const existing = Object.keys(cart).find(k => k.toLowerCase() === key);
+  if(existing) {
+    cart[existing].qty += 1;
+    showToast(`Quantity updated`);
+  } else {
+    cart[name] = { qty: 1, custom: true };
+    showToast(`Added to list`);
+  }
+  renderBasket();
+}
+
+function updateQty(item, val) {
+  const q = parseFloat(val);
+  if(!q || q <= 0) delete cart[item];
+  else cart[item].qty = parseFloat(q.toFixed(2));
+  renderBasket();
+}
+
+function renderBasket() {
+  basketItems.innerHTML = "";
+  Object.keys(cart).sort().forEach(item => {
+    const b = cart[item];
+    basketItems.innerHTML += `
+      <div class="basket-item">
+        <strong style="line-height:1.4">${formatItemName(item)}</strong>
+        ${b.custom ? '<span class="custom-tag">(Custom)</span>' : ''}
+        ${b.price ? `<br><small style="color:var(--muted)">₹${b.price} per unit</small>` : ''}
+        <div class="qty-row">
+          <input type="number" step="0.01" value="${b.qty}" onchange="updateQty('${item.replace(/'/g, "\\'")}', this.value)">
+          <span class="remove" onclick="updateQty('${item.replace(/'/g, "\\'")}', 0)">Remove</span>
+        </div>
+      </div>`;
+  });
+  basketBox.style.display = Object.keys(cart).length ? "block" : "none";
+  localStorage.setItem('grocery_cart', JSON.stringify(cart));
+}
+
+function sendToGoogleTasks() {
+  if (!navigator.onLine) {
+    alert("You are offline. Please reconnect to send to Tasks.");
+    return;
+  }
+  const itemsList = Object.keys(cart).map(i => ({ name: i, qty: cart[i].qty }));
+  showStatus("Sending to Google Tasks...");
+  fetch(TASK_API_URL, {
+    method: "POST",
+    body: JSON.stringify({ listName: "Shopping List", items: itemsList })
+  })
+  .then(() => {
+    alert("Added to Google To-Do & Telegram notified 🔔");
+    cart = {}; 
+    renderBasket();
+    clearStatus();
+  })
+  .catch(() => { alert("Failed ❌"); clearStatus(); });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.style.display = "none", 2000);
+}
+
+/* =========================================================================
+   PRICE MANAGER LOGIC
+   ========================================================================= */
+function showStatus(m) { statusMsg.textContent = m; }
+function clearStatus() { setTimeout(() => statusMsg.textContent = "", 2000); }
+
+function save(p, cb) {
+  if (!navigator.onLine) {
+    alert("Offline mode active. You cannot save price edits until reconnected.");
+    return;
+  }
+  showStatus("Saving...");
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ ...p, key: API_KEY })
+  }).then(() => {
+    clearStatus();
+    localStorage.setItem('grocery_catalog', JSON.stringify(groceries)); 
+    initDealers();
+    cb();
+  }).catch(() => {
+    showStatus("Error saving.");
+    setTimeout(clearStatus, 2000);
+  });
+}
+
+function filterItems() {
+  const v = itemInput.value.toLowerCase();
+  itemSuggestions.innerHTML = ""; filteredItems = []; itemIndex = -1;
+  if(!v) return;
+  
+  filteredItems = Object.keys(groceries).filter(i => i.toLowerCase().includes(v));
+  
+  filteredItems.forEach(i => {
+    const d = document.createElement("div");
+    d.innerHTML = formatItemName(i); 
+    d.onclick = () => selectItem(i);
     itemSuggestions.appendChild(d);
   });
 }
-function handleItemKeys(e){
+
+function handleItemKeys(e) {
   if(!filteredItems.length) return;
-  if(e.key==="ArrowDown"){e.preventDefault();itemIndex=(itemIndex+1)%filteredItems.length;highlight(itemSuggestions,itemIndex);}
-  else if(e.key==="ArrowUp"){e.preventDefault();itemIndex=(itemIndex-1+filteredItems.length)%filteredItems.length;highlight(itemSuggestions,itemIndex);}
-  else if(e.key==="Enter"){e.preventDefault();selectItem(filteredItems[itemIndex===-1?0:itemIndex]);}
+  if(e.key === "ArrowDown") { e.preventDefault(); itemIndex = (itemIndex+1) % filteredItems.length; highlight(itemSuggestions, itemIndex); }
+  else if(e.key === "ArrowUp") { e.preventDefault(); itemIndex = (itemIndex-1+filteredItems.length) % filteredItems.length; highlight(itemSuggestions, itemIndex); }
+  else if(e.key === "Enter") { e.preventDefault(); selectItem(filteredItems[itemIndex===-1 ? 0 : itemIndex]); }
 }
-function getAllDealers(){
-  const s=new Set();
-  Object.values(groceries).forEach(a=>a.forEach(d=>s.add(d.dealer)));
-  return [...s];
-}
-function filterDealerSuggestions(input,boxId){
-  const v=input.value.toLowerCase(), box=document.getElementById(boxId);
-  box.innerHTML=""; dealerIndex[boxId]=-1;
+
+function filterDealerSuggestions(input, boxId) {
+  const v = input.value.toLowerCase(), box = document.getElementById(boxId);
+  box.innerHTML = ""; dealerIndex[boxId] = -1;
   if(!v) return;
-  getAllDealers().filter(d=>d.toLowerCase().includes(v)).forEach(d=>{
-    const div=document.createElement("div");
-    div.textContent=d; div.onclick=()=>{input.value=d;box.innerHTML="";};
+  dealers.filter(d => d.toLowerCase().includes(v)).forEach(d => {
+    const div = document.createElement("div");
+    div.textContent = d; div.onclick = () => { input.value = d; box.innerHTML = ""; };
     box.appendChild(div);
   });
 }
-function handleDealerKeys(e,boxId,input){
-  const box=document.getElementById(boxId), items=[...box.children];
-  if(!items.length) return;
-  if(e.key==="ArrowDown"){e.preventDefault();dealerIndex[boxId]=(dealerIndex[boxId]+1)%items.length;highlight(box,dealerIndex[boxId]);}
-  else if(e.key==="ArrowUp"){e.preventDefault();dealerIndex[boxId]=(dealerIndex[boxId]-1+items.length)%items.length;highlight(box,dealerIndex[boxId]);}
-  else if(e.key==="Enter"||e.key===" "){e.preventDefault();input.value=items[dealerIndex[boxId]??0].textContent;box.innerHTML="";}
-}
-function highlight(box,i){ [...box.children].forEach((el,idx)=>el.classList.toggle("active",idx===i)); }
 
-function selectItem(item){
-  selectedItem=item; itemInput.value=item; itemSuggestions.innerHTML="";
+function handleDealerKeys(e, boxId, input) {
+  const box = document.getElementById(boxId), items = [...box.children];
+  if(!items.length) return;
+  if(e.key === "ArrowDown") { e.preventDefault(); dealerIndex[boxId] = (dealerIndex[boxId]+1) % items.length; highlight(box, dealerIndex[boxId]); }
+  else if(e.key === "ArrowUp") { e.preventDefault(); dealerIndex[boxId] = (dealerIndex[boxId]-1+items.length) % items.length; highlight(box, dealerIndex[boxId]); }
+  else if(e.key === "Enter" || e.key === " ") { e.preventDefault(); input.value = items[dealerIndex[boxId] ?? 0].textContent; box.innerHTML = ""; }
+}
+
+function highlight(box, i) { [...box.children].forEach((el, idx) => el.classList.toggle("active", idx === i)); }
+
+function selectItem(item) {
+  selectedItem = item; 
+  itemInput.value = item.includes('|') ? item.split('|')[0].trim() : item; 
+  
+  itemSuggestions.innerHTML = "";
   details.classList.remove("hidden"); addDealerBtn.classList.remove("hidden");
-  dealerList.innerHTML="";
-  groceries[item].forEach(d=>{
-    dealerList.innerHTML+=`
+  dealerList.innerHTML = "";
+  
+  groceries[item].forEach(d => {
+    dealerList.innerHTML += `
     <div class="dealer-row">
       <div class="dealer-info">
         <b>${d.dealer}</b> – ₹${d.price}<br>
-        Date: ${new Date(d.updated||Date.now()).toLocaleDateString("en-GB")}<br>
-        Time: ${new Date(d.updated||Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+        <small style="color:#666">
+          Date: ${new Date(d.updated || Date.now()).toLocaleDateString("en-GB")} | 
+          Time: ${new Date(d.updated || Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+        </small>
       </div>
       <div class="dealer-actions">
-        <button class="edit-btn" onclick="editDealer('${d.dealer}',${d.price})">✏️</button>
-        <button class="delete-btn" onclick="deleteDealer('${d.dealer}')">🗑</button>
+        <button class="edit-btn" onclick="editDealer('${d.dealer.replace(/'/g, "\\'")}', ${d.price})">✏️</button>
+        <button class="delete-btn" onclick="deleteDealer('${d.dealer.replace(/'/g, "\\'")}')">🗑</button>
       </div>
     </div>`;
   });
 }
 
-function enterFormMode(){itemSearchBox.classList.add("hidden");actionButtons.classList.add("hidden");details.classList.add("hidden");addDealerBtn.classList.add("hidden");}
-function exitFormMode(){itemSearchBox.classList.remove("hidden");actionButtons.classList.remove("hidden");}
+function enterFormMode() {
+  itemSearchBox.classList.add("hidden"); 
+  actionButtons.classList.add("hidden"); 
+  details.classList.add("hidden"); 
+  addDealerBtn.classList.add("hidden");
+}
+function exitFormMode() {
+  itemSearchBox.classList.remove("hidden"); 
+  actionButtons.classList.remove("hidden");
+}
 
-function showAddItem(){enterFormMode();addItemBox.classList.remove("hidden");}
-function showAddDealer(){enterFormMode();addDealerBox.classList.remove("hidden");}
+function showAddItem() { enterFormMode(); addItemBox.classList.remove("hidden"); }
+function showAddDealer() { enterFormMode(); addDealerBox.classList.remove("hidden"); }
 
-function addItem(){
-  const itemName = newItemName.value.trim();
+function handlePriceEnter(e, type) { 
+  if(e.key === "Enter") { 
+    e.preventDefault(); 
+    type === "item" ? saveNewItem() : addDealer(); 
+  } 
+}
+
+function saveNewItem() {
+  const primaryName = newItemName.value.trim();
+  const altName = newAltName.value.trim();
   const dealer = newItemDealer.value.trim();
   const price = Number(newItemPrice.value);
 
-  if(!itemName || !dealer || isNaN(price)) return;
+  if(!primaryName || !dealer || isNaN(price)) return;
 
-  // Normalize for comparison
-  const itemKey = itemName.toLowerCase();
+  const finalItemName = altName ? `${primaryName} | ${altName}` : primaryName;
+  const itemKey = finalItemName.toLowerCase();
   const dealerKey = dealer.toLowerCase();
+  
+  const existingItemKey = Object.keys(groceries).find(i => i.toLowerCase() === itemKey);
 
-  // Check if item already exists
-  const existingItemKey = Object.keys(groceries)
-    .find(i => i.toLowerCase() === itemKey);
-
-  // If item exists, check dealer duplication
-  if(existingItemKey){
-    const dealerExists = groceries[existingItemKey]
-      .some(d => d.dealer.toLowerCase() === dealerKey);
-
-    if(dealerExists){
-      alert(
-        `Item "${existingItemKey}" with dealer "${dealer}" already exists.\n` +
-        `Please edit the price instead of adding again.`
-      );
+  if(existingItemKey) {
+    const dealerExists = groceries[existingItemKey].some(d => d.dealer.toLowerCase() === dealerKey);
+    if(dealerExists) {
+      alert(`Item already exists with this dealer.\nPlease edit the price instead.`);
       newItemDealer.focus();
       return;
     }
   }
 
-  // ✅ Allowed: new item OR new dealer for existing item
-  save(
-    {
-      action: "add",
-      item: itemName,
-      dealer,
-      price
-    },
-    () => {
-      if(existingItemKey){
-        groceries[existingItemKey].push({
-          dealer,
-          price,
-          updated: Date.now()
-        });
-        cancelForms();
-        selectItem(existingItemKey);
-      } else {
-        groceries[itemName] = [{
-          dealer,
-          price,
-          updated: Date.now()
-        }];
-        cancelForms();
-        selectItem(itemName);
-      }
+  save({ action: "add", item: finalItemName, dealer, price }, () => {
+    if(existingItemKey) {
+      groceries[existingItemKey].push({ dealer, price, updated: Date.now() });
+      cancelForms();
+      selectItem(existingItemKey);
+    } else {
+      groceries[finalItemName] = [{ dealer, price, updated: Date.now() }];
+      cancelForms();
+      selectItem(finalItemName);
     }
-  );
+    if (dealerInput.value === dealer) showItems(dealer);
+  });
 }
-function addDealer(){
-  const d=dealerName.value,p=Number(dealerPrice.value);
-  if(!d||isNaN(p))return;
-  save({action:"add",item:selectedItem,dealer:d,price:p},()=>{groceries[selectedItem].push({dealer:d,price:p,updated:Date.now()});cancelForms();selectItem(selectedItem);});
+
+function addDealer() {
+  const d = dealerName.value, p = Number(dealerPrice.value);
+  if(!d || isNaN(p)) return;
+  save({ action: "add", item: selectedItem, dealer: d, price: p }, () => {
+    groceries[selectedItem].push({ dealer: d, price: p, updated: Date.now() });
+    cancelForms();
+    selectItem(selectedItem);
+    if (dealerInput.value === d) showItems(d);
+  });
 }
-function editDealer(dealer,old){
-  const p=Number(prompt("New price:",old));
-  if(isNaN(p))return;
-  save({action:"update",item:selectedItem,dealer,price:p},()=>{groceries[selectedItem].forEach(x=>{if(x.dealer===dealer){x.price=p;x.updated=Date.now();}});selectItem(selectedItem);});
+
+function editDealer(dealer, oldPrice) {
+  const p = Number(prompt(`New price for ${dealer}:`, oldPrice));
+  if(isNaN(p) || p === 0) return;
+  save({ action: "update", item: selectedItem, dealer, price: p }, () => {
+    groceries[selectedItem].forEach(x => { 
+      if(x.dealer === dealer) { x.price = p; x.updated = Date.now(); }
+    });
+    selectItem(selectedItem);
+    if (dealerInput.value === dealer) showItems(dealer);
+  });
 }
-function deleteDealer(dealer){
-  if(!confirm("Delete dealer?"))return;
-  save({action:"delete",item:selectedItem,dealer},()=>{groceries[selectedItem]=groceries[selectedItem].filter(x=>x.dealer!==dealer);selectItem(selectedItem);});
+
+function deleteDealer(dealer) {
+  if(!confirm(`Delete ${dealer} from this item?`)) return;
+  save({ action: "delete", item: selectedItem, dealer }, () => {
+    groceries[selectedItem] = groceries[selectedItem].filter(x => x.dealer !== dealer);
+    selectItem(selectedItem);
+    if (dealerInput.value === dealer) showItems(dealer);
+  });
 }
-function deleteItem(){
-  if(!confirm("Delete item?"))return;
-  save({action:"deleteItem",item:selectedItem},()=>{delete groceries[selectedItem];selectedItem="";details.classList.add("hidden");addDealerBtn.classList.add("hidden");itemInput.value="";});
+
+function deleteItem() {
+  if(!confirm("Delete this entire catalog item and all its prices?")) return;
+  save({ action: "deleteItem", item: selectedItem }, () => {
+    delete groceries[selectedItem];
+    selectedItem = "";
+    details.classList.add("hidden");
+    addDealerBtn.classList.add("hidden");
+    itemInput.value = "";
+    if (dealerInput.value) showItems(dealerInput.value);
+  });
 }
-function cancelForms(){
-  addItemBox.classList.add("hidden"); addDealerBox.classList.add("hidden"); exitFormMode();
-  newItemName.value=newItemDealer.value=newItemPrice.value=dealerName.value=dealerPrice.value="";
-  dealerSug1.innerHTML=""; dealerSug2.innerHTML="";
+
+function cancelForms() {
+  addItemBox.classList.add("hidden"); 
+  addDealerBox.classList.add("hidden"); 
+  exitFormMode();
+  newItemName.value = newAltName.value = newItemDealer.value = newItemPrice.value = dealerName.value = dealerPrice.value = "";
+  dealerSug1.innerHTML = ""; dealerSug2.innerHTML = "";
 }
 </script>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Price list app installed'))
+        .then(reg => console.log('Grocery App PWA Registered'))
         .catch(err => console.log('PWA Registration Failed', err));
     });
   }
 </script>
 </body>
 </html>
-
